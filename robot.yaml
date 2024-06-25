@@ -2,11 +2,11 @@ robot:
   name: News Scraper
   description: A bot that scrapes news articles from AlJazeera and Latimes.
 
+condaConfigFile: conda.yaml  # Use the conda.yaml file for environment setup
+
 tasks:
   Default:
     command:
-      - python3 -m pip install --upgrade pip setuptools wheel  # Ensure pip, setuptools, and wheel are up to date
-      - python3 -m pip install -r requirements.txt  # Install dependencies from requirements.txt
       - python3 src/main.py  # Run your Python script
 
 artifactsDir: output
