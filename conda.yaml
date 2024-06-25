@@ -7,4 +7,5 @@ dependencies:
       - rpaframework
       - selenium
       - pandas
+      - requests
       - Pillow
