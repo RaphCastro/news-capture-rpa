@@ -1,3 +1,4 @@
+from time import sleep
 import os
 import re
 import logging
@@ -28,8 +29,14 @@ class LATimesAdapter(BaseAdapter):
             "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input",
             search_phrase,
         )
+        self.browser.click_element("xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input")
+        self.browser.set_browser_implicit_wait(3)
         self.browser.press_keys(
             "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input", "ENTER"
+        )
+        self.browser.wait_until_element_is_visible(
+            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul",
+            35,
         )
         self.browser.wait_until_element_is_visible(
             "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select", 35
@@ -37,6 +44,7 @@ class LATimesAdapter(BaseAdapter):
         self.browser.select_from_list_by_value(
             "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select", "1"
         )
+        sleep(10)
         self.browser.wait_until_element_is_visible(
             "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul",
             35,

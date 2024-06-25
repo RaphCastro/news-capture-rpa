@@ -1,4 +1,5 @@
 from io import BytesIO
+from time import sleep
 from PIL import Image
 import logging
 import os
@@ -25,6 +26,7 @@ class AlJazeeraAdapter(BaseAdapter):
         self.browser.press_keys("xpath://*[@id='root']/div/div[1]/div[2]/div/div/form/div[1]/input", "ENTER")
         self.browser.wait_until_element_is_visible("xpath://*[@id='search-sort-option']", 35)
         self.browser.select_from_list_by_value("xpath://*[@id='search-sort-option']", "date")
+        sleep(10)
         self.browser.wait_until_element_is_visible("xpath://*[@id='main-content-area']/div[2]/div[2]/article[1]", 35)
 
         articles = []
