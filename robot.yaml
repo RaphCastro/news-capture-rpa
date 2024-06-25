@@ -5,7 +5,9 @@ robot:
 tasks:
   Default:
     shell: python
-    command: python3 src/main.py
+    command:
+      - python3
+      - src/main.py
 
 artifactsDir: output
 
