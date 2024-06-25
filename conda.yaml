@@ -1,0 +1,10 @@
+channels:
+  - defaults
+dependencies:
+  - python=3.11.5
+  - pip
+  - pip:
+      - rpaframework
+      - selenium
+      - datetime
+      - re

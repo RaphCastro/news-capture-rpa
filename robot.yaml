@@ -1,0 +1,10 @@
+robot:
+  name: News Scraper
+  description: A bot that scrapes news articles from AlJazeera and Latimes.
+
+tasks:
+  Default:
+    shell: python
+    command: python3 src/main.py
+
+condaConfigFile: conda.yaml
