@@ -106,7 +106,7 @@ class LATimesAdapter(BaseAdapter):
         pattern = r"\$\d+(?:,\d{3})*(?:\.\d{2})?|\d+ dollars|\d+ USD"
         return bool(re.search(pattern, title + description, re.IGNORECASE))
 
-    def download_image(self, image_url, save_directory="images"):
+    def download_image(self, image_url, save_directory="output"):
         if not os.path.exists(save_directory):
             os.makedirs(save_directory)
         response = requests.get(image_url)
