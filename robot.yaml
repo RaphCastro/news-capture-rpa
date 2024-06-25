@@ -7,6 +7,7 @@ condaConfigFile: conda.yaml  # Use the conda.yaml file for environment setup
 tasks:
   Default:
     command:
-      - python3 src/main.py  # Run your Python script
+      - python3 
+      - src/main.py  # Run your Python script
 
 artifactsDir: output
