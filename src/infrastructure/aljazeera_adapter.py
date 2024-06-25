@@ -1,9 +1,14 @@
+from io import BytesIO
+from PIL import Image
 import logging
+import os
 import re
 from datetime import datetime
 from RPA.Browser.Selenium import WebDriverWait
+import requests
 from infrastructure.base_adapter import BaseAdapter
 from domain.article import Article
+from utils.helpers import sanitize_filename
 
 
 class AlJazeeraAdapter(BaseAdapter):
@@ -36,7 +41,7 @@ class AlJazeeraAdapter(BaseAdapter):
                         title=title,
                         date=date,
                         description=description,
-                        image_filename=image_url,
+                        image_filename=self.download_image(image_url),
                         count=count,
                         contains_money=contains_money,
                     )
@@ -71,3 +76,23 @@ class AlJazeeraAdapter(BaseAdapter):
     def contains_money(self, title, description):
         pattern = r"\$\d+(?:,\d{3})*(?:\.\d{2})?|\d+ dollars|\d+ USD"
         return bool(re.search(pattern, title + description, re.IGNORECASE))
+
+    def download_image(self, image_url, save_directory="images"):
+        if not os.path.exists(save_directory):
+            os.makedirs(save_directory)
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            image = Image.open(BytesIO(response.content))
+            filename = os.path.basename(image_url)
+            filename = sanitize_filename(filename)
+            if not filename.lower().endswith(".jpeg"):
+                filename = os.path.splitext(filename)[0] + ".jpeg"
+            file_path = os.path.join(save_directory, filename)
+            image.convert("RGB").save(file_path, "JPEG")
+
+            return file_path
+        else:
+            logging.error(
+                f"Failed to download image. Status code: {response.status_code}"
+            )
+            return image_url
