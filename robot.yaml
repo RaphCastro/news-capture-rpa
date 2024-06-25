@@ -5,7 +5,14 @@ robot:
 tasks:
   Default:
     command:
-      - python3 -m pip install -r src/requirements.txt  # Install dependencies from requirements.txt
-      - python3 src/main.py  # Run your Python script
+      - python3
+      - -m
+      - pip
+      - install
+      - -r
+      - src/requirements.txt  # Path to your requirements.txt file
+      - &&  # Use '&&' to chain commands on the same line
+      - python3 
+      - src/main.py  # Run your Python script
 
 artifactsDir: output
