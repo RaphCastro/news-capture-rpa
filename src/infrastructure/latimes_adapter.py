@@ -21,54 +21,59 @@ class LATimesAdapter(BaseAdapter):
         self, search_phrase: str, category: str, months: int
     ) -> list[Article]:
         self.browser.wait_until_element_is_visible(
-            "xpath:html/body/ps-header/header/div[2]/button",
+            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > button",
             35,
         )
-        self.browser.click_element("xpath:html/body/ps-header/header/div[2]/button")
+        self.browser.click_element("css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > button")
         self.browser.input_text(
-            "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input",
+            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > div.ct-hidden.fixed.md\:absolute.top-12\.5.right-0.bottom-0.left-0.z-25.bg-header-bg-color.md\:top-15.md\:bottom-auto.md\:h-25.md\:shadow-sm-2 > form > label > input",
             search_phrase,
         )
-        self.browser.click_element("xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input")
-        self.browser.set_browser_implicit_wait(3)
+        self.browser.click_element(
+            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > div.ct-hidden.fixed.md\:absolute.top-12\.5.right-0.bottom-0.left-0.z-25.bg-header-bg-color.md\:top-15.md\:bottom-auto.md\:h-25.md\:shadow-sm-2 > form > label > input",
+        )
         self.browser.press_keys(
-            "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input", "ENTER"
+            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > div.ct-hidden.fixed.md\:absolute.top-12\.5.right-0.bottom-0.left-0.z-25.bg-header-bg-color.md\:top-15.md\:bottom-auto.md\:h-25.md\:shadow-sm-2 > form > label > input",
+            "ENTER"
         )
         self.browser.wait_until_element_is_visible(
-            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul",
+            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > ul",
             35,
         )
         self.browser.wait_until_element_is_visible(
-            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select", 35
+            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > div.search-results-module-results-header > div.search-results-module-sorts > div > label > select",
+            35,
         )
         self.browser.select_from_list_by_value(
-            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select", "1"
+            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > div.search-results-module-results-header > div.search-results-module-sorts > div > label > select",
+            "1",
         )
         sleep(10)
         self.browser.wait_until_element_is_visible(
-            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul",
+            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > ul",
             35,
         )
 
         articles = []
         articles_list = self.browser.find_element(
-            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul"
+            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > ul"
         )
+        i = 1
         for article in self.browser.find_elements("tag:li", articles_list):
             title = self.browser.find_element(
-                "xpath:ps-promo/div/div[2]/div/h3/a", article
+                "css:ps-promo > div > div.promo-content > div > h3 > a", article
             ).text
             try:
                 date_text = self.browser.find_element(
-                    "xpath:ps-promo/div/div[2]/p[2]", article
+                    "css:ps-promo > div > div.promo-content > p.promo-timestamp", article
                 ).get_attribute("data-timestamp")
             except Exception:
                 date_text = None
             description = self.browser.find_element(
-                "xpath:ps-promo/div/div[2]/p[1]", article
+                "css:ps-promo > div > div.promo-content > p.promo-description", article
             ).text
             image_url = self.browser.find_element(
-                "xpath:ps-promo/div/div[1]/a/picture/img", article
+                "css:ps-promo > div > div.promo-media > a > picture > img", article
             ).get_attribute("src")
             date = self.parse_date(date_text)
             if self.is_within_months(date, months):
@@ -79,11 +84,12 @@ class LATimesAdapter(BaseAdapter):
                         title=title,
                         date=date,
                         description=description,
-                        image_filename=self.download_image(image_url),
+                        image_filename=self.download_image(image_url, i),
                         count=count,
                         contains_money=contains_money,
                     )
                 )
+                i += 1
             logging.info(f"Currently processed: {title} --> {description}")
         return articles
 
@@ -122,16 +128,20 @@ class LATimesAdapter(BaseAdapter):
         pattern = r"\$\d+(?:,\d{3})*(?:\.\d{2})?|\d+ dollars|\d+ USD"
         return bool(re.search(pattern, title + description, re.IGNORECASE))
 
-    def download_image(self, image_url, save_directory="output"):
+    def download_image(self, image_url: str, iter: int, save_directory="output"):
         if not os.path.exists(save_directory):
             os.makedirs(save_directory)
         response = requests.get(image_url)
         if response.status_code == 200:
             image = Image.open(BytesIO(response.content))
-            filename = os.path.basename(image_url)
+            filename = os.path.basename(f"latimes_article_{iter}")
             filename = sanitize_filename(filename)
             if not filename.lower().endswith(".jpeg"):
                 filename = os.path.splitext(filename)[0] + ".jpeg"
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{filename}"
+
             file_path = os.path.join(save_directory, filename)
             image.convert("RGB").save(file_path, "JPEG")
 
@@ -140,4 +150,4 @@ class LATimesAdapter(BaseAdapter):
             logging.error(
                 f"Failed to download image. Status code: {response.status_code}"
             )
-            return image_url
+            return f"latimes_article_{iter}"
