@@ -6,8 +6,7 @@ tasks:
   Default:
     command:
       - python3
+      - -m pip install -r src/requirements.txt
       - src/main.py
 
 artifactsDir: output
-
-condaConfigFile: conda.yaml
