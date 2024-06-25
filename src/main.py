@@ -1,5 +1,5 @@
 from application.news_service import NewsService
-from logging.logger import setup_logging
+from utils.logger import setup_logging
 
 
 def main():

@@ -74,7 +74,7 @@ class AlJazeeraAdapter(BaseAdapter):
                         title=title,
                         date=date,
                         description=description,
-                        image_filename=self.download_image(image_url),
+                        image_filename=self.download_image(image_url, i),
                         count=count,
                         contains_money=contains_money,
                     )
