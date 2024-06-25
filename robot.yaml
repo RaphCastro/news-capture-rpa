@@ -5,6 +5,11 @@ robot:
 tasks:
   Default:
     command:
+      - python3 
+      - -m 
+      - ensurepip 
+      - --upgrade
+      - "&&"
       - python3
       - -m
       - pip
