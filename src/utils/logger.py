@@ -3,7 +3,7 @@ import logging.config
 import os
 
 
-def setup_logging(log_directory="output/logs"):
+def setup_logging(log_directory="output"):
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
