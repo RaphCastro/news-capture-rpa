@@ -23,17 +23,23 @@ class LATimesAdapter(BaseAdapter):
             "xpath:html/body/ps-header/header/div[2]/button",
             35,
         )
-        self.browser.click_element(
-            "xpath:html/body/ps-header/header/div[2]/button"
-        )
+        self.browser.click_element("xpath:html/body/ps-header/header/div[2]/button")
         self.browser.input_text(
-            "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input", search_phrase
+            "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input",
+            search_phrase,
         )
         self.browser.press_keys(
             "xpath:html/body/ps-header/header/div[2]/div[2]/form/label/input", "ENTER"
         )
         self.browser.wait_until_element_is_visible(
-            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul", 35
+            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select", 35
+        )
+        self.browser.select_from_list_by_value(
+            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select", "1"
+        )
+        self.browser.wait_until_element_is_visible(
+            "xpath:html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/ul",
+            35,
         )
 
         articles = []
@@ -79,7 +85,9 @@ class LATimesAdapter(BaseAdapter):
 
         try:
             parse_timestamp = int(timestamp)
-            parsed_date = datetime.fromtimestamp(parse_timestamp / 1000).strftime("%Y-%m-%d")
+            parsed_date = datetime.fromtimestamp(parse_timestamp / 1000).strftime(
+                "%Y-%m-%d"
+            )
         except Exception as e:
             logging.warning(f"An error occurred while parsing the timestamp: {e}")
             parsed_date = datetime.now().strftime("%Y-%m-%d")
