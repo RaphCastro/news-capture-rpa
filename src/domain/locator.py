@@ -43,7 +43,7 @@ class AlJazeeraLocatorAdapter(LocatorAdapter):
     SEARCH_BUTTON: str = "css:div[class='site-header__search-trigger'] > button"
     SEARCH_INPUT: str = "css:input[class='search-bar__input']"
     SORT_BUTTON: str = "css:#search-sort-option"
-    SORT_FILTER: str = "Date"
+    SORT_FILTER: str = "date"
     ARTICLES_LIST: str = "css:div[class='search-result__list']"
     TICLE: str = "tag:article"
     ARTICLE_TITLE: str = "css:a[class='u-clickable-card__link'] > span"
