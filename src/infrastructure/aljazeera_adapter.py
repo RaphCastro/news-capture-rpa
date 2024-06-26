@@ -5,8 +5,8 @@ import logging
 import os
 import re
 from datetime import datetime
-from RPA.Browser.Selenium import WebDriverWait
 import requests
+from domain.locator import AlJazeeraLocatorAdapter
 from infrastructure.base_adapter import BaseAdapter
 from domain.article import Article
 from utils.helpers import sanitize_filename
@@ -14,57 +14,45 @@ from utils.helpers import sanitize_filename
 
 class AlJazeeraAdapter(BaseAdapter):
     def __init__(self):
-        super().__init__()
-        self.base_url = "https://www.aljazeera.com/"
+        super().__init__(
+            locator=AlJazeeraLocatorAdapter, base_url="https://www.aljazeera.com/"
+        )
 
-    def scrape_news(
-        self, search_phrase: str, category: str, months: int
-    ) -> list[Article]:
-        self.browser.wait_until_element_is_visible(
-            "css:div[class='site-header__search-trigger'] > button",
-            35,
-        )
-        self.browser.click_element(
-            "css:div[class='site-header__search-trigger'] > button"
-        )
-        self.browser.input_text(
-            "css:input[class='search-bar__input']",
-            search_phrase,
-        )
-        self.browser.press_keys(
-            "css:input[class='search-bar__input']", "ENTER"
-        )
-        self.browser.wait_until_element_is_visible(
-            "css:#search-sort-option", 35
-        )
+    def scrape_news(self, search_phrase: str, months: int) -> list[Article]:
+
+        self.browser.wait_until_element_is_visible(self.locator.SEARCH_BUTTON, 35)
+        self.browser.click_element(self.locator.SEARCH_BUTTON)
+
+        self.browser.input_text(self.locator.SEARCH_INPUT, search_phrase)
+        self.browser.click_element(self.locator.SEARCH_INPUT)
+        self.browser.press_keys(self.locator.SEARCH_INPUT, "ENTER")
+
+        self.browser.wait_until_element_is_visible(self.locator.SORT_BUTTON, 35)
+        self.browser.wait_until_element_is_visible(self.locator.SORT_BUTTON, 35)
         self.browser.select_from_list_by_value(
-            "css:#search-sort-option", "date"
+            self.locator.SORT_BUTTON, self.locator.SORT_FILTER
         )
+
         sleep(10)
-        self.browser.wait_until_element_is_visible(
-            "css:div[class='search-result__list'] > article:nth-child(1)",
-            35
-        )
+        self.browser.wait_until_element_is_visible(self.locator.ARTICLES_LIST, 35)
 
         articles = []
-        articles_div = self.browser.find_element(
-            "css:div[class='search-result__list']"
-        )
+        articles_list = self.browser.find_element(self.locator.ARTICLES_LIST)
         i = 1
-        for article in self.browser.find_elements("tag:article", articles_div):
-            title = self.browser.find_element(
-                "css:a[class='u-clickable-card__link'] > span", article
-            ).text
-            date_text = str(
-                self.browser.find_element(
-                    "css:a[class='u-clickable-card__link']", article
-                ).get_attribute("href")
-            )
+
+        for article in self.browser.find_elements(self.locator.ARTICLE, articles_list):
+            title = self.browser.find_element(self.locator.ARTICLE_TITLE, article).text
+            try:
+                date_text = self.browser.find_element(
+                    self.locator.ARTICLE_DATE, article
+                ).get_attribute(self.locator.DATE_ATTRIBUTE)
+            except Exception:
+                date_text = None
             description = self.browser.find_element(
-                "css:div[class='gc__excerpt'] > p", article
+                self.locator.ARTICLE_DESCRIPTION, article
             ).text
             image_url = self.browser.find_element(
-                "css:img[class='article-card__image gc__image']", article
+                self.locator.ARTICLE_IMAGE_URL, article
             ).get_attribute("src")
             date = self.parse_date(date_text)
             if self.is_within_months(date, months):
@@ -84,10 +72,12 @@ class AlJazeeraAdapter(BaseAdapter):
             logging.info(f"Currently processed: {title} --> {description}")
         return articles
 
-    def parse_date(self, date_text):
+    def parse_date(self, date_text: str) -> str:
         try:
             splited = date_text.split("/")
-            parsed_date = datetime.strptime(f"{splited[4]}-{splited[5]}-{splited[6]}", "%Y-%m-%d")
+            parsed_date = datetime.strptime(
+                f"{splited[4]}-{splited[5]}-{splited[6]}", "%Y-%m-%d"
+            )
             return parsed_date
         except Exception:
             parsed_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
@@ -109,11 +99,13 @@ class AlJazeeraAdapter(BaseAdapter):
         )
         return count
 
-    def contains_money(self, title, description):
+    def contains_money(self, title: str, description: str) -> bool:
         pattern = r"\$\d+(?:,\d{3})*(?:\.\d{2})?|\d+ dollars|\d+ USD"
         return bool(re.search(pattern, title + description, re.IGNORECASE))
 
-    def download_image(self, image_url: str, iter: int, save_directory="output"):
+    def download_image(
+        self, image_url: str, iter: int, save_directory: str = "output"
+    ) -> str:
         if not os.path.exists(save_directory):
             os.makedirs(save_directory)
         response = requests.get(image_url)

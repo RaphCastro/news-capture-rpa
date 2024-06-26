@@ -5,6 +5,7 @@ import logging
 from PIL import Image
 from io import BytesIO
 import requests
+from domain.locator import LATimesLocatorAdapter
 from infrastructure.base_adapter import BaseAdapter
 from domain.article import Article
 from datetime import datetime
@@ -14,66 +15,45 @@ from utils.helpers import sanitize_filename
 
 class LATimesAdapter(BaseAdapter):
     def __init__(self):
-        super().__init__()
-        self.base_url = "https://www.latimes.com/"
+        super().__init__(
+            locator=LATimesLocatorAdapter, base_url="https://www.latimes.com/"
+        )
 
-    def scrape_news(
-        self, search_phrase: str, category: str, months: int
-    ) -> list[Article]:
-        self.browser.wait_until_element_is_visible(
-            "css:button[data-element='search-button']",
-            35,
-        )
-        self.browser.click_element("css:button[data-element='search-button']")
-        self.browser.input_text(
-            "css:input[data-element='search-form-input']",
-            search_phrase,
-        )
-        self.browser.click_element(
-            "css:input[data-element='search-form-input']",
-        )
-        self.browser.press_keys(
-            "css:input[data-element='search-form-input']",
-            "ENTER"
-        )
-        self.browser.wait_until_element_is_visible(
-            "css:ul[class='search-results-module-results-menu']",
-            35,
-        )
-        self.browser.wait_until_element_is_visible(
-            "css:select[class='select-input']",
-            35,
-        )
+    def scrape_news(self, search_phrase: str, months: int) -> list[Article]:
+
+        self.browser.wait_until_element_is_visible(self.locator.SEARCH_BUTTON, 35)
+        self.browser.click_element(self.locator.SEARCH_BUTTON)
+
+        self.browser.input_text(self.locator.SEARCH_INPUT, search_phrase)
+        self.browser.click_element(self.locator.SEARCH_INPUT)
+        self.browser.press_keys(self.locator.SEARCH_INPUT, "ENTER")
+
+        self.browser.wait_until_element_is_visible(self.locator.SORT_BUTTON, 35)
+        self.browser.wait_until_element_is_visible(self.locator.SORT_BUTTON, 35)
         self.browser.select_from_list_by_value(
-            "css:select[class='select-input']",
-            "1",
+            self.locator.SORT_BUTTON, self.locator.SORT_FILTER
         )
+
         sleep(10)
-        self.browser.wait_until_element_is_visible(
-            "css:ul[class='search-results-module-results-menu']",
-            35,
-        )
+        self.browser.wait_until_element_is_visible(self.locator.ARTICLES_LIST, 35)
 
         articles = []
-        articles_list = self.browser.find_element(
-            "css:ul[class='search-results-module-results-menu']"
-        )
+        articles_list = self.browser.find_element(self.locator.ARTICLES_LIST)
         i = 1
-        for article in self.browser.find_elements("tag:li", articles_list):
-            title = self.browser.find_element(
-                "css:a[class='link']", article
-            ).text
+
+        for article in self.browser.find_elements(self.locator.ARTICLE, articles_list):
+            title = self.browser.find_element(self.locator.ARTICLE_TITLE, article).text
             try:
                 date_text = self.browser.find_element(
-                    "css:p[class='promo-timestamp']", article
-                ).get_attribute("data-timestamp")
+                    self.locator.ARTICLE_DATE, article
+                ).get_attribute(self.locator.DATE_ATTRIBUTE)
             except Exception:
                 date_text = None
             description = self.browser.find_element(
-                "css:p[class='promo-description']", article
+                self.locator.ARTICLE_DESCRIPTION, article
             ).text
             image_url = self.browser.find_element(
-                "css:img[class='image']", article
+                self.locator.ARTICLE_IMAGE_URL, article
             ).get_attribute("src")
             date = self.parse_date(date_text)
             if self.is_within_months(date, months):
@@ -93,27 +73,23 @@ class LATimesAdapter(BaseAdapter):
             logging.info(f"Currently processed: {title} --> {description}")
         return articles
 
-    def parse_date(self, timestamp):
-        if timestamp is None:
-            return datetime.now().strftime("%Y-%m-%d")
-
+    def parse_date(self, date_text: str) -> str:
         try:
-            parse_timestamp = int(timestamp)
-            parsed_date = datetime.fromtimestamp(parse_timestamp / 1000).strftime(
-                "%Y-%m-%d"
+            splited = date_text.split("/")
+            parsed_date = datetime.strptime(
+                f"{splited[4]}-{splited[5]}-{splited[6]}", "%Y-%m-%d"
             )
-        except Exception as e:
-            logging.warning(f"An error occurred while parsing the timestamp: {e}")
-            parsed_date = datetime.now().strftime("%Y-%m-%d")
-        return parsed_date
+            return parsed_date
+        except Exception:
+            parsed_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
+            return parsed_date
 
     def is_within_months(self, date, months):
         try:
             article_date = datetime.strptime(date, "%Y-%m-%d")
             return (datetime.now() - article_date).days <= months * 30
-        except Exception as e:
-            logging.warning(f"An error occurred while checking the date: {e}")
-            return False
+        except Exception:
+            return (datetime.now() - datetime.now()).days <= months * 30
 
     def count_phrases(self, phrase, title, description):
         count = sum(
@@ -124,11 +100,11 @@ class LATimesAdapter(BaseAdapter):
         )
         return count
 
-    def contains_money(self, title, description):
+    def contains_money(self, title: str, description: str) -> bool:
         pattern = r"\$\d+(?:,\d{3})*(?:\.\d{2})?|\d+ dollars|\d+ USD"
         return bool(re.search(pattern, title + description, re.IGNORECASE))
 
-    def download_image(self, image_url: str, iter: int, save_directory="output"):
+    def download_image(self, image_url: str, iter: int, save_directory: str = "output") -> str:
         if not os.path.exists(save_directory):
             os.makedirs(save_directory)
         response = requests.get(image_url)
@@ -150,4 +126,4 @@ class LATimesAdapter(BaseAdapter):
             logging.error(
                 f"Failed to download image. Status code: {response.status_code}"
             )
-            return f"latimes_article_{iter}"
+            return f"aljazeera_article_{iter}"

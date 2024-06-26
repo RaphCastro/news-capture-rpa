@@ -4,6 +4,11 @@ import os
 
 
 def setup_logging(log_directory="output"):
+    """
+    Creates the logging configuration for code usage
+    Args:
+        log_directory (str / folder_path): folder path to store the logs
+    """
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
