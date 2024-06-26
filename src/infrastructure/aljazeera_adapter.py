@@ -21,18 +21,18 @@ class AlJazeeraAdapter(BaseAdapter):
         self, search_phrase: str, category: str, months: int
     ) -> list[Article]:
         self.browser.wait_until_element_is_visible(
-            "css:#root > div > div.container.container--header.container--white.header-is-sticky > div:nth-child(1) > div > header > div.site-header__live-menu--desktop > div.site-header__search-trigger > button",
+            "css:div[class='site-header__search-trigger'] > button",
             35,
         )
         self.browser.click_element(
-            "css:#root > div > div.container.container--header.container--white.header-is-sticky > div:nth-child(1) > div > header > div.site-header__live-menu--desktop > div.site-header__search-trigger > button"
+            "css:div[class='site-header__search-trigger'] > button"
         )
         self.browser.input_text(
-            "css:#root > div > div.container.container--header.container--white.header-is-sticky > div.site-post-header > div > div > form > div.search-bar__input-container > input",
+            "css:input[class='search-bar__input']",
             search_phrase,
         )
         self.browser.press_keys(
-            "css:#root > div > div.container.container--header.container--white.header-is-sticky > div.site-post-header > div > div > form > div.search-bar__input-container > input", "ENTER"
+            "css:input[class='search-bar__input']", "ENTER"
         )
         self.browser.wait_until_element_is_visible(
             "css:#search-sort-option", 35
@@ -42,28 +42,29 @@ class AlJazeeraAdapter(BaseAdapter):
         )
         sleep(10)
         self.browser.wait_until_element_is_visible(
-            "css:#main-content-area > div.l-col.l-col--8 > div.search-result__list > article:nth-child(1)", 35
+            "css:div[class='search-result__list'] > article:nth-child(1)",
+            35
         )
 
         articles = []
         articles_div = self.browser.find_element(
-            "css:#main-content-area > div.l-col.l-col--8 > div.search-result__list"
+            "css:div[class='search-result__list']"
         )
         i = 1
         for article in self.browser.find_elements("tag:article", articles_div):
             title = self.browser.find_element(
-                "css:div.gc__content > div.gc__header-wrap > h3 > a > span", article
+                "css:a[class='u-clickable-card__link'] > span", article
             ).text
             date_text = str(
                 self.browser.find_element(
-                    "css:div.gc__content > div.gc__header-wrap > h3 > a", article
+                    "css:a[class='u-clickable-card__link']", article
                 ).get_attribute("href")
             )
             description = self.browser.find_element(
-                "css:div.gc__content > div.gc__body-wrap > div > p", article
+                "css:div[class='gc__excerpt'] > p", article
             ).text
             image_url = self.browser.find_element(
-                "css:div.gc__image-wrap > div > div > img", article
+                "css:img[class='article-card__image gc__image']", article
             ).get_attribute("src")
             date = self.parse_date(date_text)
             if self.is_within_months(date, months):
@@ -84,18 +85,19 @@ class AlJazeeraAdapter(BaseAdapter):
         return articles
 
     def parse_date(self, date_text):
-        splited = date_text.split("/")
-        if len(splited) >= 7:
-            parsed_date = f"{splited[4]}-{splited[5]}-{splited[6]}"
-        else:
+        try:
+            splited = date_text.split("/")
+            parsed_date = datetime.strptime(f"{splited[4]}-{splited[5]}-{splited[6]}", "%Y-%m-%d")
+            return parsed_date
+        except Exception:
             parsed_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
-        return parsed_date
+            return parsed_date
 
     def is_within_months(self, date, months):
         try:
             article_date = datetime.strptime(date, "%Y-%m-%d")
             return (datetime.now() - article_date).days <= months * 30
-        except Exception as e:
+        except Exception:
             return (datetime.now() - datetime.now()).days <= months * 30
 
     def count_phrases(self, phrase, title, description):

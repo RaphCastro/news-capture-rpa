@@ -21,59 +21,59 @@ class LATimesAdapter(BaseAdapter):
         self, search_phrase: str, category: str, months: int
     ) -> list[Article]:
         self.browser.wait_until_element_is_visible(
-            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > button",
+            "css:button[data-element='search-button']",
             35,
         )
-        self.browser.click_element("css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > button")
+        self.browser.click_element("css:button[data-element='search-button']")
         self.browser.input_text(
-            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > div.ct-hidden.fixed.md\:absolute.top-12\.5.right-0.bottom-0.left-0.z-25.bg-header-bg-color.md\:top-15.md\:bottom-auto.md\:h-25.md\:shadow-sm-2 > form > label > input",
+            "css:input[data-element='search-form-input']",
             search_phrase,
         )
         self.browser.click_element(
-            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > div.ct-hidden.fixed.md\:absolute.top-12\.5.right-0.bottom-0.left-0.z-25.bg-header-bg-color.md\:top-15.md\:bottom-auto.md\:h-25.md\:shadow-sm-2 > form > label > input",
+            "css:input[data-element='search-form-input']",
         )
         self.browser.press_keys(
-            "css:body > ps-header > header > div.flex.\[\@media_print\]\:hidden > div.ct-hidden.fixed.md\:absolute.top-12\.5.right-0.bottom-0.left-0.z-25.bg-header-bg-color.md\:top-15.md\:bottom-auto.md\:h-25.md\:shadow-sm-2 > form > label > input",
+            "css:input[data-element='search-form-input']",
             "ENTER"
         )
         self.browser.wait_until_element_is_visible(
-            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > ul",
+            "css:ul[class='search-results-module-results-menu']",
             35,
         )
         self.browser.wait_until_element_is_visible(
-            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > div.search-results-module-results-header > div.search-results-module-sorts > div > label > select",
+            "css:select[class='select-input']",
             35,
         )
         self.browser.select_from_list_by_value(
-            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > div.search-results-module-results-header > div.search-results-module-sorts > div > label > select",
+            "css:select[class='select-input']",
             "1",
         )
         sleep(10)
         self.browser.wait_until_element_is_visible(
-            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > ul",
+            "css:ul[class='search-results-module-results-menu']",
             35,
         )
 
         articles = []
         articles_list = self.browser.find_element(
-            "css:body > div.page-content > ps-search-results-module > form > div.search-results-module-ajax > ps-search-filters > div > main > ul"
+            "css:ul[class='search-results-module-results-menu']"
         )
         i = 1
         for article in self.browser.find_elements("tag:li", articles_list):
             title = self.browser.find_element(
-                "css:ps-promo > div > div.promo-content > div > h3 > a", article
+                "css:a[class='link']", article
             ).text
             try:
                 date_text = self.browser.find_element(
-                    "css:ps-promo > div > div.promo-content > p.promo-timestamp", article
+                    "css:p[class='promo-timestamp']", article
                 ).get_attribute("data-timestamp")
             except Exception:
                 date_text = None
             description = self.browser.find_element(
-                "css:ps-promo > div > div.promo-content > p.promo-description", article
+                "css:p[class='promo-description']", article
             ).text
             image_url = self.browser.find_element(
-                "css:ps-promo > div > div.promo-media > a > picture > img", article
+                "css:img[class='image']", article
             ).get_attribute("src")
             date = self.parse_date(date_text)
             if self.is_within_months(date, months):
