@@ -43,19 +43,24 @@ class LATimesAdapter(BaseAdapter):
 
         for article in self.browser.find_elements(self.locator.ARTICLE, articles_list):
             title = self.browser.find_element(self.locator.ARTICLE_TITLE, article).text
+
             try:
                 date_text = self.browser.find_element(
                     self.locator.ARTICLE_DATE, article
                 ).get_attribute(self.locator.DATE_ATTRIBUTE)
             except Exception:
                 date_text = None
+
             description = self.browser.find_element(
                 self.locator.ARTICLE_DESCRIPTION, article
             ).text
+
             image_url = self.browser.find_element(
                 self.locator.ARTICLE_IMAGE_URL, article
             ).get_attribute("src")
+
             date = self.parse_date(date_text)
+
             if self.is_within_months(date, months):
                 count = self.count_phrases(search_phrase, title, description)
                 contains_money = self.contains_money(title, description)
@@ -84,18 +89,18 @@ class LATimesAdapter(BaseAdapter):
             parsed_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
             return parsed_date
 
-    def is_within_months(self, date, months):
+    def is_within_months(self, date: datetime, months: int) -> bool:
         try:
             article_date = datetime.strptime(date, "%Y-%m-%d")
             return (datetime.now() - article_date).days <= months * 30
         except Exception:
             return (datetime.now() - datetime.now()).days <= months * 30
 
-    def count_phrases(self, phrase, title, description):
+    def count_phrases(self, search_phrase: str, title: str, description: str) -> int:
         count = sum(
             1
             for _ in re.finditer(
-                r"\b%s\b" % re.escape(phrase), title + description, re.IGNORECASE
+                r"\b%s\b" % re.escape(search_phrase), title + description, re.IGNORECASE
             )
         )
         return count
@@ -104,10 +109,15 @@ class LATimesAdapter(BaseAdapter):
         pattern = r"\$\d+(?:,\d{3})*(?:\.\d{2})?|\d+ dollars|\d+ USD"
         return bool(re.search(pattern, title + description, re.IGNORECASE))
 
-    def download_image(self, image_url: str, iter: int, save_directory: str = "output") -> str:
+    def download_image(
+        self, image_url: str, iter: int, save_directory: str = "output"
+    ) -> str:
+
         if not os.path.exists(save_directory):
             os.makedirs(save_directory)
+
         response = requests.get(image_url)
+
         if response.status_code == 200:
             image = Image.open(BytesIO(response.content))
             filename = os.path.basename(f"latimes_article_{iter}")

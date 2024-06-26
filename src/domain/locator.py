@@ -1,86 +1,53 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from dataclasses import dataclass
 
 
+@dataclass
 class LocatorAdapter(ABC):
-    @property
-    @abstractmethod
-    def SEARCH_BUTTON(self):
-        pass
+    """
+    Adapter class for locators.
 
-    @property
-    @abstractmethod
-    def SEARCH_INPUT(self):
-        pass
+    This base class defines the interface for locator adapters, which provide specific CSS or XPath selectors for elements on different websites.
 
-    @property
-    @abstractmethod
-    def SORT_BUTTON(self):
-        pass
-
-    @property
-    @abstractmethod
-    def SORT_FILTER(self):
-        pass
-
-    @property
-    @abstractmethod
-    def ARTICLES_LIST(self):
-        pass
-
-    @property
-    @abstractmethod
-    def ARTICLE(self):
-        pass
-
-    @property
-    @abstractmethod
-    def ARTICLE_TITLE(self):
-        pass
-
-    @property
-    @abstractmethod
-    def ARTICLE_DESCRIPTION(self):
-        pass
-
-    @property
-    @abstractmethod
-    def ARTICLE_DATE(self):
-        pass
-
-    @property
-    @abstractmethod
-    def ARTICLE_IMAGE_URL(self):
-        pass
-
-    @property
-    @abstractmethod
-    def DATE_ATTRIBUTE(self):
-        pass
+    Attributes:
+        ELEMENT (str) : Locator for the specific Element
+    """
+    SEARCH_BUTTON: str = ""
+    SEARCH_INPUT: str = ""
+    SORT_BUTTON: str = ""
+    SORT_FILTER: str = ""
+    ARTICLES_LIST: str = ""
+    ARTICLE: str = ""
+    ARTICLE_TITLE: str = ""
+    ARTICLE_DESCRIPTION: str = ""
+    ARTICLE_DATE: str = ""
+    ARTICLE_IMAGE_URL: str = ""
+    DATE_ATTRIBUTE: str = ""
 
 
 class LATimesLocatorAdapter(LocatorAdapter):
-    SEARCH_BUTTON = "css:button[data-element='search-button']"
-    SEARCH_INPUT = "css:input[data-element='search-form-input']"
-    SORT_BUTTON = "css:select[class='select-input']"
-    SORT_FILTER = "1"
-    ARTICLES_LIST = "css:ul[class='search-results-module-results-menu']"
-    ARTICLE = "tag:li"
-    ARTICLE_TITLE = "css:a[class='link']"
-    ARTICLE_DESCRIPTION = "css:p[class='promo-description']"
-    ARTICLE_DATE = "css:p[class='promo-timestamp']"
-    ARTICLE_IMAGE_URL = "css:img[class='image']"
-    DATE_ATTRIBUTE = "data-timestamp"
+    SEARCH_BUTTON: str = "css:button[data-element='search-button']"
+    SEARCH_INPUT: str = "css:input[data-element='search-form-input']"
+    SORT_BUTTON: str = "css:select[class='select-input']"
+    SORT_FILTER: str = "1"
+    ARTICLES_LIST: str = "css:ul[class='search-results-module-results-menu']"
+    ARTICLE: str = "tag:li"
+    ARTICLE_TITLE: str = "css:a[class='link']"
+    ARTICLE_DESCRIPTION: str = "css:p[class='promo-description']"
+    ARTICLE_DATE: str = "css:p[class='promo-timestamp']"
+    ARTICLE_IMAGE_URL: str = "css:img[class='image']"
+    DATE_ATTRIBUTE: str = "data-timestamp"
 
 
 class AlJazeeraLocatorAdapter(LocatorAdapter):
-    SEARCH_BUTTON = "css:div[class='site-header__search-trigger'] > button"
-    SEARCH_INPUT = "css:input[class='search-bar__input']"
-    SORT_BUTTON = "css:#search-sort-option"
-    SORT_FILTER = "Date"
-    ARTICLES_LIST = "css:div[class='search-result__list']"
-    ARTICLE = "tag:article"
-    ARTICLE_TITLE = "css:a[class='u-clickable-card__link'] > span"
-    ARTICLE_DESCRIPTION = "css:div[class='gc__excerpt'] > p"
-    ARTICLE_DATE = "css:a[class='u-clickable-card__link']"
-    ARTICLE_IMAGE_URL = "css:img[class='article-card__image gc__image']"
-    DATE_ATTRIBUTE = "href"
+    SEARCH_BUTTON: str = "css:div[class='site-header__search-trigger'] > button"
+    SEARCH_INPUT: str = "css:input[class='search-bar__input']"
+    SORT_BUTTON: str = "css:#search-sort-option"
+    SORT_FILTER: str = "Date"
+    ARTICLES_LIST: str = "css:div[class='search-result__list']"
+    TICLE: str = "tag:article"
+    ARTICLE_TITLE: str = "css:a[class='u-clickable-card__link'] > span"
+    ARTICLE_DESCRIPTION: str = "css:div[class='gc__excerpt'] > p"
+    ARTICLE_DATE: str = "css:a[class='u-clickable-card__link']"
+    ARTICLE_IMAGE_URL: str = "css:img[class='article-card__image gc__image']"
+    DATE_ATTRIBUTE: str = "href"
