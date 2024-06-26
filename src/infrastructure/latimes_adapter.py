@@ -42,8 +42,8 @@ class LATimesAdapter(BaseAdapter):
         i = 1
 
         for article in self.browser.find_elements(self.locator.ARTICLE, articles_list):
-            title = self.browser.find_element(self.locator.ARTICLE_TITLE, article).text
 
+            title = self.browser.find_element(self.locator.ARTICLE_TITLE, article).text
             try:
                 date_text = self.browser.find_element(
                     self.locator.ARTICLE_DATE, article
